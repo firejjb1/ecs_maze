@@ -1,0 +1,45 @@
+player spawn at center at first or when collide with enemy
+
+player control w a s d
+
+bound by window edges
+
+shoot bullet toward mouse pointer with left click
+
+speed size lifespan of bullets read from config
+
+Special ability
+- free design 
+- right mouse button
+- cooldown timer
+
+Enemy
+- spawn in random location every X frames
+- must not overlap with sides of screen
+- shapes have random num of vertices (min and max in config)
+- radius specified in config
+- given a random color
+- given a random speed (min and max from config)
+- when reach edge, bounce in opposite dir
+- large enemies destroyed: spawn into smaller
+- number of vertices of smaller: same as bigger
+- travel outward at angle 360/vertices
+
+Score
+- top left corner
+
+Drawing
+- all entities given a slow rotation
+- special effects
+- alpha value set to remaining lifespan * 255
+
+Misc
+- P key pause the game
+- ESC close the game
+
+Config
+Window 1280 720 60(frame limit) 0 (full screen)
+Font fonts/arial.ttf 24 255 255 255
+Player 32 (shape radius) 32(collision radius) 5 (speed) 5 5 5 (fill color RGB) 255 0 0 (outline color RGB) 4 (outline thickness) 8 (vertices)
+Enemy 32(SR) 32(CR) 3(min speed) 3(max speed) 255 255 255(outline) 2(outline thick) 3(vmin) 8(vmax) 90(small lifespan) 120(spawn interval)
+Bullet 10(SR) 10(CR) 20(S) 255 255 255(fill) 255 255 255(outline) 2(OT) 20(V) 90(L)

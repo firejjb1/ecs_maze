@@ -129,7 +129,7 @@ void initializeCircles(std::vector<Circle> circles, std::vector<sf::CircleShape>
 	}
 
 }
-
+/**
 int main() {
 	Config config("config.txt");
 	const int wWidth = config.wWidth;
@@ -201,4 +201,4 @@ int main() {
 	
 	}
 	return 0;
-}
+}*/
