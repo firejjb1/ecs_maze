@@ -2,6 +2,7 @@
 
 int main()
 {
-	Game g("config.txt");
+	const std::string path("Config");
+	Game g(path);
 	g.run();
 }

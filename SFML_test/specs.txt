@@ -1,45 +1,110 @@
-player spawn at center at first or when collide with enemy
+Assets:
+	Texture and animations
+	Fonts
+	assets.txt
 
-player control w a s d
+Entity
+	position denote center of rectangular sprite
+	also center of bounding box
+	sprite.setOrigin() in animation class constructor
 
-bound by window edges
+Player
+	animations: stand, run, air
+	determine and assign animation
+	controls: A D W Space
+	can move in air
+	can only jump when standing on a tile
+	hold jump vs release (start falling)
+	shoot in direction facing
+	collide with Tile entities
+	does not collide with Dec entities
+	gravity component - accelerate downward
+	maximum speed (either direction)
+	CBoundingBox specified in level file
 
-shoot bullet toward mouse pointer with left click
+Animations
+	assets file
+	store multiple frames inside a texture
+	Animation class handles frame advancement based on animation speed
+	implement Animation::update()
+	implement Animation::hasEnded()
+	can be repeated or non-repeating
+	non-repeating: destroyed once hasEnded() returns true
 
-speed size lifespan of bullets read from config
+Decoration Entities
+	Drawn on screen, no other interaction
+	
+Tiles
+	Level geometry, interact with players
+	Any animation
+	CBoundingBox size of animationtile->getComponent<CAnimation>().animation.getSize()
+	current animation for a tile retrieved with tile->getComponent<CAnimation>().animation.getName()
+	Tiles have different behaviour depending on which Animation they are given
 
-Special ability
-- free design 
-- right mouse button
-- cooldown timer
+Brick Tiles
+	Brick animation
+	collide with bullet or hit from below: destroyed
+		animation change to Explosion
+		bounding box removed
 
-Enemy
-- spawn in random location every X frames
-- must not overlap with sides of screen
-- shapes have random num of vertices (min and max in config)
-- radius specified in config
-- given a random color
-- given a random speed (min and max from config)
-- when reach edge, bounce in opposite dir
-- large enemies destroyed: spawn into smaller
-- number of vertices of smaller: same as bigger
-- travel outward at angle 360/vertices
+Question Tiles
+	Question animation
+	hit from below: Question2 animation, lifespan entity Coin animation appear for 30 frames, 64 pixels above
 
-Score
-- top left corner
-
-Drawing
-- all entities given a slow rotation
-- special effects
-- alpha value set to remaining lifespan * 255
+Bonus
+	special effects
+	special weapon
+	NPCs
 
 Misc
-- P key pause the game
-- ESC close the game
+	P pause
+	T toggle drawing textures
+	C draw bounding box
+	G draw grid
+	ESC back to main or quit if in main
 
-Config
-Window 1280 720 60(frame limit) 0 (full screen)
-Font fonts/arial.ttf 24 255 255 255
-Player 32 (shape radius) 32(collision radius) 5 (speed) 5 5 5 (fill color RGB) 255 0 0 (outline color RGB) 4 (outline thickness) 8 (vertices)
-Enemy 32(SR) 32(CR) 3(min speed) 3(max speed) 255 255 255(outline) 2(outline thick) 3(vmin) 8(vmax) 90(small lifespan) 120(spawn interval)
-Bullet 10(SR) 10(CR) 20(S) 255 255 255(fill) 255 255 255(outline) 2(OT) 20(V) 90(L)
+Level Creation
+
+Asset Config
+	Texture asset spec
+		Texture N P
+		N is texture name (no space)
+		P is filepath (no space)
+	Animation asset spec
+		Animation N T F S
+		N is name
+		T is texture name (existing texture)
+		F is frame count
+		S is animation speed (game frames between anim frames)
+	Font  asset spec
+		Font N P
+		N is name
+		P is path
+
+Level Config
+	Tile entity spec
+		Tile N GX GY
+		N is animation name (asset name)
+		GX is grid x pos
+		GY is grid y pos
+	Decoration entity spec
+		Dec N X Y
+		N is animation name
+		X is x pos
+		Y is y pos
+	Player spec
+		Player GX GY CW CH SX SY SM GY B
+		GX, GY Grid Pos starting pos 
+		CW CH bounding box width height
+		SX left right speed
+		SY jump speed
+		SM max speed
+		GY gravity
+		B bullet animation
+
+steps
+	Rendering
+	Scene_Play
+	
+
+

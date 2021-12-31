@@ -2,7 +2,9 @@
 
 Entity::Entity(const size_t i, const std::string &t)
 	: m_id(i), m_tag(t)
-{}
+{
+	 
+}
 
 bool Entity::isActive() const
 {
