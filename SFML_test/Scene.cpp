@@ -1,10 +1,5 @@
 #include "Scene.h"
 
-void Scene::doAction(Action action)
-{
-	sDoAction(action);
-}
-
 void Scene::registerAction(int i, std::string a)
 {
 	actionMap[i] = a;

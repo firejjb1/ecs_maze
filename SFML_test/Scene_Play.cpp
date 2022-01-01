@@ -53,10 +53,12 @@ Vec2 Scene_Play::gridToMidPixel(float gridX, float gridY, std::shared_ptr<Entity
 
 void Scene_Play::spawnPlayer()
 {
-	player = entities.addEntity("player");
+	player = entities.addEntity("Player");
 	player->addComponent<CAnimation>(GameEngine->assets().getAnimation("PlayerIdleAnim"), true);
-	player->addComponent<CTransform>(Vec2(0, 0));
+	player->addComponent<CTransform>(Vec2(0.0, 0.0), Vec2(0.0, 0.0), Vec2(5.0, 5.0), 0.0);
 	player->addComponent<CBoundingBox>(Vec2(120, 80));
+	player->addComponent<CInput>();
+	player->addComponent<CState>("Idle");
 	// TODO
 }
 
@@ -70,6 +72,13 @@ void Scene_Play::update()
 	sAnimation();
 	sRender();
 	
+}
+
+void Scene_Play::doAction(const Action& action)
+{
+	sDoAction(action);
+	std::cout << action.getName() << std::endl;
+
 }
 
 void Scene_Play::sDoAction(const Action &action)
@@ -92,15 +101,46 @@ void Scene_Play::sDoAction(const Action &action)
 		{
 			m_paused = !m_paused;
 		}
+		else if (action.getName() == "PLAYER_MOVE_UP")
+		{
+			player->getComponent<CInput>().up = true;
+		}
+		else if (action.getName() == "PLAYER_MOVE_DOWN")
+		{
+			player->getComponent<CInput>().down = true;
+		}
+		else if (action.getName() == "PLAYER_MOVE_LEFT")
+		{
+			player->getComponent<CInput>().left = true;
+		}
+		else if (action.getName() == "PLAYER_MOVE_RIGHT")
+		{
+			player->getComponent<CInput>().right = true;
+		}
 		else if (action.getName() == "QUIT")
 		{
 			onEnd();
 		}
 	
 	}
-	else if (action.getType() == "END")
+	else if (action.getType() == "End")
 	{
-
+		if (action.getName() == "PLAYER_MOVE_UP")
+		{
+			player->getComponent<CInput>().up = false;
+		}
+		else if (action.getName() == "PLAYER_MOVE_DOWN")
+		{
+			player->getComponent<CInput>().down = false;
+		}
+		else if (action.getName() == "PLAYER_MOVE_LEFT")
+		{
+			player->getComponent<CInput>().left = false;
+		}
+		else if (action.getName() == "PLAYER_MOVE_RIGHT")
+		{
+			player->getComponent<CInput>().right = false;
+		}
 	}
 }
 
@@ -198,10 +238,20 @@ void Scene_Play::sMovement()
 {
 	auto& pTransform = player->getComponent<CTransform>();
 	auto& pInput = player->getComponent<CInput>();
-	
-	Vec2 playerV(0, 0);
-
-
+	auto& pAnimation = player->getComponent<CAnimation>().animation;
+	Vec2 playerV(pInput.right - pInput.left, pInput.down - pInput.up);
+	if (playerV.x * playerV.x == 1 && playerV.y * playerV.y == 1)
+	{
+		playerV *= 0.5;
+	}
+	if (playerV.dist(Vec2(0.f, 0.f)) > 0.f)
+	{
+		player->getComponent<CState>().state = "Run";
+	}
+	else {
+		player->getComponent<CState>().state = "Idle";
+	}
+	// playerV *= PlayerConfig.V;
 
 	pTransform.velocity = playerV;
 	pTransform.pos += pTransform.velocity;
@@ -209,6 +259,19 @@ void Scene_Play::sMovement()
 	// gravity
 	// maximum gravity speed in x y
 	// note, set entity's scale.x to -1 to face left
+	if (pInput.left)
+	{
+		// not working.. fix
+		pAnimation.setFlipH(true);
+		
+		//sf::IntRect rect = pAnimation.getSprite().getTextureRect();
+		//rect.left = rect.left + rect.width;
+		//rect.width *= -1;
+		//pAnimation.getSprite().setTextureRect(rect);
+	}
+	if (pInput.right) {
+		pAnimation.setFlipH(false);
+	}
 }
 
 void Scene_Play::sCollision()
@@ -229,6 +292,11 @@ void Scene_Play::sAnimation()
 		if (entity->hasComponent<CAnimation>())
 		{
 			auto & anim = entity->getComponent<CAnimation>().animation;
+			std::string animName = entity->tag() + entity->getComponent<CState>().state + "Anim";
+			if (anim.getName() != animName)
+			{
+				anim = GameEngine->assets().getAnimation(animName);
+			}
 			anim.update();
 			if (anim.hasEnded())
 			{
@@ -243,4 +311,3 @@ void Scene_Play::drawLine(const Vec2& p1, const Vec2& p2)
 	sf::Vertex line[] = { sf::Vector2f(p1.x, p1.y), sf::Vector2f(p2.x, p2.y) };
 	GameEngine->window().draw(line, 2, sf::Lines);
 }
-

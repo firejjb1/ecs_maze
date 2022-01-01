@@ -16,7 +16,7 @@ public:
 	CTransform(const Vec2& p)
 		:pos{ p } {}
 	CTransform(const Vec2& p, const Vec2& v, const Vec2 & sc, float a)
-		: pos(p), velocity(v), angle(a) {}
+		: pos(p), velocity(v), scale(sc), angle(a) {}
 };
 
 class CShape

@@ -15,6 +15,8 @@ public:
 		x{v2.x}, y{v2.y}
 	{};
 
+	Vec2& operator=(const Vec2& rhs);
+
 	bool operator == (const Vec2& rhs) const;
 	bool operator != (const Vec2& rhs) const;
 

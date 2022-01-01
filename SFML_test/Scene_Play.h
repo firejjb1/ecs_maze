@@ -12,7 +12,7 @@ class Scene_Play : public Scene
 	Vec2 m_gridSize = { 64, 64 };
 	bool m_drawTextures = true;
 	bool m_drawCollision = false;
-	bool m_drawGrid = true;
+	bool m_drawGrid = false;
 	bool m_paused;
 
 	void init();
@@ -22,7 +22,7 @@ class Scene_Play : public Scene
 	void sCollision();
 	void sLifespan();
 	void sRender();
-	void sDoAction(const Action&);
+	virtual void sDoAction(const Action&);
 	void sDebug();
 	void loadLevel(const std::string& levelPath);
 	Vec2 gridToMidPixel(float gridX, float gridY, std::shared_ptr<Entity> entity);
@@ -31,6 +31,7 @@ class Scene_Play : public Scene
 	void drawLine(const Vec2& p1, const Vec2& p2);
 public:
 	void update();
+	virtual void doAction(const Action& action);
 	Scene_Play(std::shared_ptr<Game> g, const std::string & levelPath);
 
 };

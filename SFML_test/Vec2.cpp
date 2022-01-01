@@ -69,3 +69,11 @@ void Vec2::normalize()
 		y /= 1.41421;
 	}
 }
+
+
+Vec2 & Vec2::operator=(const Vec2& rhs)
+{
+	x = rhs.x;
+	y = rhs.y;
+	return *this;
+}

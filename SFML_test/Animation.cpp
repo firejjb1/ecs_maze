@@ -13,8 +13,13 @@ void Animation::update()
 {
 	currentFrame++;
 	int frame = (currentFrame / speed) % frameCount;
-	sf::IntRect rect(frame * frameWidth, 0, frameWidth, getSize().y);
+	sf::IntRect rect(frame * frameWidth + (flipH ? frameWidth : 0), 0, frameWidth * (flipH ? - 1.f : 1.f), getSize().y);
 	sprite.setTextureRect(rect);
+}
+
+void Animation::setFlipH(bool flip)
+{
+	flipH = flip;
 }
 
 bool Animation::hasEnded()
@@ -29,6 +34,8 @@ std::string& Animation::getName()
 
 Vec2& Animation::getSize()
 {
+	size.x = sprite.getTexture()->getSize().x;
+	size.y = sprite.getTexture()->getSize().y;
 	return size;
 }
 

@@ -12,6 +12,8 @@ class Animation
 	int frameWidth;
 	int frameHeight;
 	bool repeat = true;
+	bool flipH;
+	bool flipV;
 
 public:
 	Animation() {}
@@ -22,4 +24,5 @@ public:
 	Vec2 &getSize();
 	sf::Sprite& getSprite();
 	void setRepeat(bool);
+	void setFlipH(bool);
 };

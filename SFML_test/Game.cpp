@@ -59,8 +59,8 @@ void Game::run()
 
 	while (m_running)
 	{
-		m_sceneMap[m_currentScene]->update();
 		sUserInput();
+		currentScene()->update();
 	}
 
 }
@@ -79,11 +79,65 @@ void Game::sUserInput()
 		if (e.type == sf::Event::KeyPressed)
 		{
 			std::cout << "key pressed: " << e.key.code << "\n";
+			if (e.key.code == sf::Keyboard::G)
+			{
+				Action newAction("TOGGLE_GRID", "Start");
+				currentScene()->doAction(newAction);
+			}
+			else if (e.key.code == sf::Keyboard::T)
+			{
+				Action newAction("TOGGLE_TEXTURE", "Start");
+				currentScene()->doAction(newAction);
+			}
+			else if (e.key.code == sf::Keyboard::C)
+			{
+				Action newAction("TOGGLE_COLLISION", "Start");
+				currentScene()->doAction(newAction);
+			}
+			else if (e.key.code == sf::Keyboard::W)
+			{
+				Action newAction("PLAYER_MOVE_UP", "Start");
+				currentScene()->doAction(newAction);
+			}
+			else if (e.key.code == sf::Keyboard::S)
+			{
+				Action newAction("PLAYER_MOVE_DOWN", "Start");
+				currentScene()->doAction(newAction);
+			}
+			else if (e.key.code == sf::Keyboard::A)
+			{
+				Action newAction("PLAYER_MOVE_LEFT", "Start");
+				currentScene()->doAction(newAction);
+			}
+			else if (e.key.code == sf::Keyboard::D)
+			{
+				Action newAction("PLAYER_MOVE_RIGHT", "Start");
+				currentScene()->doAction(newAction);
+			}
 		
 		}
 		if (e.type == sf::Event::KeyReleased)
 		{
-		
+			if (e.key.code == sf::Keyboard::W)
+			{
+				Action newAction("PLAYER_MOVE_UP", "End");
+				currentScene()->doAction(newAction);
+			}
+			else if (e.key.code == sf::Keyboard::S)
+			{
+				Action newAction("PLAYER_MOVE_DOWN", "End");
+				currentScene()->doAction(newAction);
+			}
+			else if (e.key.code == sf::Keyboard::A)
+			{
+				Action newAction("PLAYER_MOVE_LEFT", "End");
+				currentScene()->doAction(newAction);
+			}
+			else if (e.key.code == sf::Keyboard::D)
+			{
+				Action newAction("PLAYER_MOVE_RIGHT", "End");
+				currentScene()->doAction(newAction);
+			}
 		}
 		if (e.type == sf::Event::MouseButtonPressed)
 		{
@@ -109,4 +163,9 @@ void Game::changeScene(const std::string& sceneName, std::shared_ptr<Scene> scen
 sf::RenderWindow& Game::window()
 {
 	return m_window;
+}
+
+std::shared_ptr<Scene> Game::currentScene()
+{
+	return m_sceneMap[m_currentScene];
 }
