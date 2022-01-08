@@ -4,5 +4,6 @@
 class Physics
 {
 public:
-	bool isCollision(Entity, Entity);
+	static bool isCollision(ptr<Entity>, ptr<Entity>);
+	static Vec2 getOverlap(ptr<Entity>, ptr<Entity>);
 };

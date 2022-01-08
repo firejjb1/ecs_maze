@@ -99,8 +99,10 @@ public:
 	Animation animation;
 	bool repeat = false;
 	CAnimation() {};
-	CAnimation(const Animation & animation, bool r)
-		:animation(animation), repeat(r) {}
+	CAnimation(Animation & animation, bool r)
+		:animation(animation), repeat(r) {
+		animation.setRepeat(r);
+	}
 };
 
 class CGravity
@@ -116,6 +118,7 @@ class CState
 {
 public:
 	bool has = false;
+	std::string facing = "Right";
 	std::string state = "jumping";
 	CState() {}
 	CState(const std::string & s) : state(s) {}

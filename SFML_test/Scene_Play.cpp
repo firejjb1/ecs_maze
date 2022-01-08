@@ -1,5 +1,6 @@
 #include "Scene_Play.h"
 #include "Game.h"
+#include "Physics.h"
  
 Scene_Play::Scene_Play(std::shared_ptr<Game> game, const std::string & levelPath):
 	levelPath{levelPath}, Scene(game)
@@ -27,23 +28,20 @@ void Scene_Play::loadLevel(const std::string & levelPath)
 	// read level file and add approriate entities
 	// use PlayerConfig
 	spawnPlayer();
-	// sample
-	/**
-	
-	auto brick = entities.addEntity("tile");
-	brick->addComponent<CAnimation>(GameEngine->assets().getAnimation("Brick"), true);
-	brick->addComponent<CTransform>(Vec2(96, 480));
-	if (brick->getComponent<CAnimation>().animation.getName() == "Brick")
-	{
-		// tile is a brick
-	}
+}
 
-	auto block = entities.addEntity("tile");
-	block->addComponent<CAnimation>(GameEngine->assets().getAnimation("Block"), true);
-	block->addComponent<CTransform>(Vec2(224, 480));
-	block->addComponent<CBoundingBox>(GameEngine->assets().getAnimation("Block").getSize());
-	*/
-	// make sure use reference for components
+void Scene_Play::sEnemySpawner()
+{
+	
+	if (entities.getEntities("Enemy").size() == 0)
+	{
+		std::shared_ptr<Entity> ina = entities.addEntity("Enemy");
+		Animation &inaAnim = GameEngine->assets().getAnimation("InaIdleAnim");
+		ina->addComponent<CAnimation>(inaAnim, true);
+		ina->addComponent<CTransform>(Vec2(644.0, 480.0), Vec2(0.0, 0.0), Vec2(1.0, 1.0), 0.0);
+		ina->addComponent<CBoundingBox>(inaAnim.getSize());
+	}
+	
 }
 
 Vec2 Scene_Play::gridToMidPixel(float gridX, float gridY, std::shared_ptr<Entity> entity)
@@ -54,9 +52,10 @@ Vec2 Scene_Play::gridToMidPixel(float gridX, float gridY, std::shared_ptr<Entity
 void Scene_Play::spawnPlayer()
 {
 	player = entities.addEntity("Player");
-	player->addComponent<CAnimation>(GameEngine->assets().getAnimation("PlayerIdleAnim"), true);
-	player->addComponent<CTransform>(Vec2(0.0, 0.0), Vec2(0.0, 0.0), Vec2(5.0, 5.0), 0.0);
-	player->addComponent<CBoundingBox>(Vec2(120, 80));
+	Animation &playerAnim = GameEngine->assets().getAnimation("PlayerIdleAnim");
+	player->addComponent<CAnimation>(playerAnim, true);
+	player->addComponent<CTransform>(Vec2(400.0, 480.0), Vec2(0.0, 0.0), Vec2(3.0, 3.0), 0.0);
+	player->addComponent<CBoundingBox>(playerAnim.getSize());
 	player->addComponent<CInput>();
 	player->addComponent<CState>("Idle");
 	// TODO
@@ -70,7 +69,9 @@ void Scene_Play::update()
 	sLifespan();
 	sCollision();
 	sAnimation();
+	sEnemySpawner();
 	sRender();
+	
 	
 }
 
@@ -112,10 +113,12 @@ void Scene_Play::sDoAction(const Action &action)
 		else if (action.getName() == "PLAYER_MOVE_LEFT")
 		{
 			player->getComponent<CInput>().left = true;
+			player->getComponent<CState>().facing = "Left";
 		}
 		else if (action.getName() == "PLAYER_MOVE_RIGHT")
 		{
 			player->getComponent<CInput>().right = true;
+			player->getComponent<CState>().facing = "Right";
 		}
 		else if (action.getName() == "QUIT")
 		{
@@ -156,7 +159,7 @@ void Scene_Play::sLifespan()
 
 void Scene_Play::sRender()
 {
-	if (!m_paused) { GameEngine->window().clear(sf::Color(100, 100, 255));}
+	if (!m_paused) { GameEngine->window().clear(sf::Color(100, 100, 255)); }
 	else { GameEngine->window().clear(sf::Color(50, 50, 150)); }
 
 	// set viewport of window to be centered on player if it's far enough right
@@ -174,6 +177,7 @@ void Scene_Play::sRender()
 			if (e->hasComponent<CAnimation>())
 			{
 				auto& animation = e->getComponent<CAnimation>().animation;
+				//std::cout << e->tag() << animation.getSprite().getTexture() << "\n";
 				animation.getSprite().setRotation(transform.angle);
 				animation.getSprite().setPosition(transform.pos.x, transform.pos.y);
 				animation.getSprite().setScale(transform.scale.x, transform.scale.y);
@@ -244,22 +248,25 @@ void Scene_Play::sMovement()
 	{
 		playerV *= 0.5;
 	}
+	playerV *= playerConfig.S+5.f; // TODO change when actually implemented read config
 	if (playerV.dist(Vec2(0.f, 0.f)) > 0.f)
 	{
 		player->getComponent<CState>().state = "Run";
 	}
-	else {
+	else 
+	{
 		player->getComponent<CState>().state = "Idle";
 	}
 	// playerV *= PlayerConfig.V;
 
 	pTransform.velocity = playerV;
+	pTransform.prevPos = Vec2(pTransform.pos);
 	pTransform.pos += pTransform.velocity;
 	// player movement based on cInput
 	// gravity
 	// maximum gravity speed in x y
 	// note, set entity's scale.x to -1 to face left
-	if (pInput.left)
+	if (player->getComponent<CState>().facing == "Left")
 	{
 		// not working.. fix
 		pAnimation.setFlipH(true);
@@ -269,7 +276,7 @@ void Scene_Play::sMovement()
 		//rect.width *= -1;
 		//pAnimation.getSprite().setTextureRect(rect);
 	}
-	if (pInput.right) {
+	else {
 		pAnimation.setFlipH(false);
 	}
 }
@@ -279,6 +286,15 @@ void Scene_Play::sCollision()
 	// implement Physics::GetOverlap
 	// check if player has fallen down hole
 	// don't walk off left side of the map
+	for (auto e : entities.getEntities("Enemy"))
+	{
+		if (Physics::isCollision(player, e))
+		{
+			Vec2 ov = Physics::getOverlap(player, e);
+			player->getComponent<CTransform>().pos = player->getComponent<CTransform>().prevPos;
+		}
+		
+	}
 }
 
 void Scene_Play::sAnimation()
@@ -292,11 +308,15 @@ void Scene_Play::sAnimation()
 		if (entity->hasComponent<CAnimation>())
 		{
 			auto & anim = entity->getComponent<CAnimation>().animation;
-			std::string animName = entity->tag() + entity->getComponent<CState>().state + "Anim";
-			if (anim.getName() != animName)
+			if (entity->hasComponent<CState>())
 			{
-				anim = GameEngine->assets().getAnimation(animName);
+				std::string animName = entity->tag() + entity->getComponent<CState>().state + "Anim";
+				if (anim.getName() != animName)
+				{
+					anim = GameEngine->assets().getAnimation(animName);
+				}
 			}
+		
 			anim.update();
 			if (anim.hasEnded())
 			{

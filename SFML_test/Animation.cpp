@@ -7,13 +7,14 @@ Animation::Animation(std::string name, sf::Sprite sprite, int frameCount, int sp
 	size.y = sprite.getTexture()->getSize().y;
 	frameWidth = size.x / frameCount;
 	frameHeight = size.y;
+	this->sprite.setOrigin(frameWidth*0.45, frameHeight*0.7);
 }
 
 void Animation::update()
 {
 	currentFrame++;
 	int frame = (currentFrame / speed) % frameCount;
-	sf::IntRect rect(frame * frameWidth + (flipH ? frameWidth : 0), 0, frameWidth * (flipH ? - 1.f : 1.f), getSize().y);
+	sf::IntRect rect(frame * frameWidth + (flipH ? frameWidth : 0), 0, frameWidth * (flipH ? - 1.f : 1.f), frameHeight);
 	sprite.setTextureRect(rect);
 }
 
@@ -34,8 +35,9 @@ std::string& Animation::getName()
 
 Vec2& Animation::getSize()
 {
-	size.x = sprite.getTexture()->getSize().x;
-	size.y = sprite.getTexture()->getSize().y;
+	size.x = frameWidth;
+	size.y = frameHeight;
+
 	return size;
 }
 

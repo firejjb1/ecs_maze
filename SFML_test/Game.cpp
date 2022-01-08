@@ -33,6 +33,7 @@ void Game::init(const std::string& path)
 			int frameCount;
 			float animSpeed;
 			assetIn >> name >> texName >> frameCount >> animSpeed;
+			std::cout << "Animation " << name << " texture " << texName << " frame count " << frameCount << " animation speed " << animSpeed << "\n";
 			m_assets.addAnimation(name, Animation(name, sf::Sprite(m_assets.getTexture(texName)), frameCount, animSpeed));
 		}
 
@@ -50,8 +51,6 @@ void Game::init(const std::string& path)
 	Scene_Play sceneLevel1(std::shared_ptr<Game>(this), std::string(path+"/Level.txt"));
 	m_sceneMap["level1"] = std::make_shared<Scene_Play>(sceneLevel1);
 	m_currentScene = "level1"; 
-
-
 }
 
 void Game::run()

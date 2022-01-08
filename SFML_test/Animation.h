@@ -12,10 +12,11 @@ class Animation
 	int frameWidth;
 	int frameHeight;
 	bool repeat = true;
-	bool flipH;
-	bool flipV;
+	bool flipH = false;
+	bool flipV = false;
 
 public:
+	
 	Animation() {}
 	Animation(std::string name, sf::Sprite sprite, int frameCount, int speed);
 	void update();
