@@ -14,7 +14,7 @@ void Game::init(const std::string& path)
 	std::string input;
 	
 	// render window
-	m_window.create(sf::VideoMode(1600, 900), "Proto Game");
+	m_window.create(sf::VideoMode(1600, 900), "Survive Ina'Nis");
 	m_window.setFramerateLimit(60);
 	
 	while (assetIn >> input)

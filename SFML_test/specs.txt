@@ -101,6 +101,14 @@ Level Config
 		SM max speed
 		GY gravity
 		B bullet animation
+	Enemy spec
+		Enemy GX GY CW CH SX SY SM GY
+		GX, GY Grid Pos starting pos 
+		CW CH bounding box width height
+		SX left right speed
+		SY jump speed
+		SM max speed
+		GY gravity
 
 steps
 	Rendering

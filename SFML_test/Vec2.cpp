@@ -62,12 +62,13 @@ float Vec2::dist(const Vec2& rhs) const
 
 void Vec2::normalize()
 {
-	if (std::abs(x) > 0 && std::abs(y) > 0)
+	if (x == 0.0 && y == 0.0)
 	{
-		// 2(x^2) = vel^2 | 2^0.5 = vel/x | vel / 2^0.5 = x 
-		x /= 1.41421;
-		y /= 1.41421;
+		return;
 	}
+	Vec2 newVec = Vec2(x * x, y * y) / (x * x + y * y);
+	x = newVec.x;
+	y = newVec.y;
 }
 
 

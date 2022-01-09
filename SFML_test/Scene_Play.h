@@ -1,13 +1,15 @@
 #pragma once
 #include "Scene.h"
 
-struct PlayerConfig { int SR, CR, FR, FG, FB, OR, OG, OB, OT, V; float S; };
+struct PlayerConfig { int GX, GY; float CW, CH, SX, SY, SM, GV; std::string B; };
+struct EnemyConfig { std::string name; int GX, GY; float CW, CH, SX, SY, SM, GV; };
 
 class Scene_Play : public Scene
 {
 	std::string levelPath;
 	std::shared_ptr<Entity> player;
 	PlayerConfig playerConfig;
+	std::vector<EnemyConfig> enemyConfig;
 	sf::Text m_gridText;
 	Vec2 m_gridSize = { 64, 64 };
 	bool m_drawTextures = true;

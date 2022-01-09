@@ -15,7 +15,7 @@ void Scene_Play::init()
 	registerAction(sf::Keyboard::T, "TOGGLE_TEXTURE");
 	registerAction(sf::Keyboard::C, "TOGGLE_COLLISION");
 	registerAction(sf::Keyboard::G, "TOGGLE_GRID");
-	// add controls
+	
 	m_gridText.setCharacterSize(12);
 	m_gridText.setFont(GameEngine->assets().getFont("Arial"));
 
@@ -26,8 +26,30 @@ void Scene_Play::loadLevel(const std::string & levelPath)
 {
 	entities = EntityManager();
 	// read level file and add approriate entities
-	// use PlayerConfig
-	spawnPlayer();
+		// GX GY CW CH SX SY SM GY B
+	int GX, GY;
+	float CW, CH, SX, SY, SM, GV;
+	std::string B;
+	std::string name;
+	std::ifstream levelin(levelPath);
+	std::string type;
+
+	while (levelin >> type)
+	{
+		if (type == "Player")
+		{
+			levelin >> GX >> GY >> CW >> CH >> SX >> SY >> SM >> GV >> B;
+			playerConfig = { GX, GY, CW, CH, SX, SY, SM, GV, B };
+			spawnPlayer();
+		}
+
+		if (type == "Enemy")
+		{
+			levelin >> name >> GX >> GY >> CW >> CH >> SX >> SY >> SM >> GV;
+			enemyConfig.push_back({ name, GX, GY, CW, CH, SX, SY, SM, GV });
+		}
+	}
+	
 }
 
 void Scene_Play::sEnemySpawner()
@@ -35,11 +57,15 @@ void Scene_Play::sEnemySpawner()
 	
 	if (entities.getEntities("Enemy").size() == 0)
 	{
-		std::shared_ptr<Entity> ina = entities.addEntity("Enemy");
-		Animation &inaAnim = GameEngine->assets().getAnimation("InaIdleAnim");
-		ina->addComponent<CAnimation>(inaAnim, true);
-		ina->addComponent<CTransform>(Vec2(644.0, 480.0), Vec2(0.0, 0.0), Vec2(1.0, 1.0), 0.0);
-		ina->addComponent<CBoundingBox>(inaAnim.getSize());
+		for (auto eConfig : enemyConfig)
+		{
+			std::shared_ptr<Entity> e = entities.addEntity("Enemy");
+			Animation& anim = GameEngine->assets().getAnimation(eConfig.name + "IdleAnim");
+			e->addComponent<CAnimation>(anim, true);
+			e->addComponent<CTransform>(gridToMidPixel(eConfig.GX, eConfig.GY, e), Vec2(0.0, 0.0), Vec2(2.0, 2.0), 0.0);
+			e->addComponent<CBoundingBox>(Vec2(eConfig.CW, eConfig.CH));
+		}
+		
 	}
 	
 }
@@ -54,8 +80,8 @@ void Scene_Play::spawnPlayer()
 	player = entities.addEntity("Player");
 	Animation &playerAnim = GameEngine->assets().getAnimation("PlayerIdleAnim");
 	player->addComponent<CAnimation>(playerAnim, true);
-	player->addComponent<CTransform>(Vec2(400.0, 480.0), Vec2(0.0, 0.0), Vec2(3.0, 3.0), 0.0);
-	player->addComponent<CBoundingBox>(playerAnim.getSize());
+	player->addComponent<CTransform>(gridToMidPixel(playerConfig.GX, playerConfig.GY, player), Vec2(0.0, 0.0), Vec2(3.0, 3.0), 0.0);
+	player->addComponent<CBoundingBox>(Vec2(playerConfig.CW, playerConfig.CH));
 	player->addComponent<CInput>();
 	player->addComponent<CState>("Idle");
 	// TODO
@@ -244,11 +270,9 @@ void Scene_Play::sMovement()
 	auto& pInput = player->getComponent<CInput>();
 	auto& pAnimation = player->getComponent<CAnimation>().animation;
 	Vec2 playerV(pInput.right - pInput.left, pInput.down - pInput.up);
-	if (playerV.x * playerV.x == 1 && playerV.y * playerV.y == 1)
-	{
-		playerV *= 0.5;
-	}
-	playerV *= playerConfig.S+5.f; // TODO change when actually implemented read config
+	playerV *= playerConfig.SX;
+	// normalize
+	
 	if (playerV.dist(Vec2(0.f, 0.f)) > 0.f)
 	{
 		player->getComponent<CState>().state = "Run";
@@ -257,7 +281,6 @@ void Scene_Play::sMovement()
 	{
 		player->getComponent<CState>().state = "Idle";
 	}
-	// playerV *= PlayerConfig.V;
 
 	pTransform.velocity = playerV;
 	pTransform.prevPos = Vec2(pTransform.pos);
@@ -293,7 +316,6 @@ void Scene_Play::sCollision()
 			Vec2 ov = Physics::getOverlap(player, e);
 			player->getComponent<CTransform>().pos = player->getComponent<CTransform>().prevPos;
 		}
-		
 	}
 }
 

@@ -7,7 +7,7 @@ Animation::Animation(std::string name, sf::Sprite sprite, int frameCount, int sp
 	size.y = sprite.getTexture()->getSize().y;
 	frameWidth = size.x / frameCount;
 	frameHeight = size.y;
-	this->sprite.setOrigin(frameWidth*0.45, frameHeight*0.7);
+	this->sprite.setOrigin(frameWidth*0.5, frameHeight*0.7);
 }
 
 void Animation::update()
@@ -20,6 +20,10 @@ void Animation::update()
 
 void Animation::setFlipH(bool flip)
 {
+	if (flipH != flip)
+	{
+		currentFrame = 0;
+	}
 	flipH = flip;
 }
 
