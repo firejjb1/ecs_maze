@@ -13,7 +13,7 @@ class Scene_Play : public Scene
 	std::vector<EnemyConfig> enemyConfig;
 	std::vector<TileConfig> tileConfig;
 	sf::Text m_gridText;
-	Vec2 m_gridSize = { 64, 64 };
+	Vec2 m_gridSize;
 	bool m_drawTextures = true;
 	bool m_drawCollision = false;
 	bool m_drawGrid = false;

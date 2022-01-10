@@ -10,6 +10,8 @@ Scene_Play::Scene_Play(std::shared_ptr<Game> game, const std::string & levelPath
 
 void Scene_Play::init()
 {
+	m_gridSize = { GameEngine->window().getSize().x / 10.f, GameEngine->window().getSize().y / 10.f };
+
 	registerAction(sf::Keyboard::P, "PAUSE");
 	registerAction(sf::Keyboard::Escape, "Quit");
 	registerAction(sf::Keyboard::T, "TOGGLE_TEXTURE");
@@ -69,15 +71,17 @@ void Scene_Play::sEnemySpawner()
 			std::shared_ptr<Entity> e = entities.addEntity("Enemy");
 			Animation& anim = GameEngine->assets().getAnimation(eConfig.name + "IdleAnim");
 			e->addComponent<CAnimation>(anim, true);
-			e->addComponent<CTransform>(gridToMidPixel(eConfig.GX, eConfig.GY, e), Vec2(0.0, 0.0), Vec2(2.0, 2.0), 0.0);
-			e->addComponent<CBoundingBox>(Vec2(eConfig.CW, eConfig.CH));
+			e->addComponent<CTransform>(gridToMidPixel(eConfig.GX, eConfig.GY, e), Vec2(0.0, 0.0), Vec2(1.0, 1.0), 0.0);
+
+			// e->addComponent<CBoundingBox>(Vec2(eConfig.CW, eConfig.CH));
+			e->addComponent<CBoundingBox>(anim.getSize());
 		}
 	}
 }
 
 Vec2 Scene_Play::gridToMidPixel(float gridX, float gridY, std::shared_ptr<Entity> entity)
 {
-	return Vec2(gridX * m_gridSize.x, gridY * m_gridSize.y);
+	return Vec2(gridX * m_gridSize.x - m_gridSize.x / 2.0, gridY * m_gridSize.y - m_gridSize.y / 2.0);
 }
 
 void Scene_Play::spawnPlayer()
@@ -85,9 +89,9 @@ void Scene_Play::spawnPlayer()
 	player = entities.addEntity("Player");
 	Animation &playerAnim = GameEngine->assets().getAnimation("PlayerIdleAnim");
 	player->addComponent<CAnimation>(playerAnim, true);
-	player->addComponent<CTransform>(gridToMidPixel(playerConfig.GX, playerConfig.GY, player), Vec2(0.0, 0.0), Vec2(3.0, 3.0), 0.0);
+	player->addComponent<CTransform>(gridToMidPixel(playerConfig.GX, playerConfig.GY, player), Vec2(0.0, 0.0), Vec2(2.0, 2.0), 0.0);
 	player->addComponent<CBoundingBox>(Vec2(playerConfig.CW, playerConfig.CH));
-	player->addComponent<CInput>();
+	player->addComponent<CInput>(); 
 	player->addComponent<CState>("Idle");
 	// TODO
 }
@@ -96,9 +100,10 @@ void Scene_Play::spawnTiles()
 {
 	for (auto config: tileConfig)
 	{
-		auto tile = entities.addEntity("Tile");
+		std::shared_ptr<Entity> tile = entities.addEntity("Tile");
 		tile->addComponent<CAnimation>(GameEngine->assets().getAnimation(config.name), true);
-		tile->addComponent<CTransform>(gridToMidPixel(config.GX, config.GY, tile), Vec2(0.0, 0.0), Vec2(1.0, 1.0), 0.0);
+		auto pos = gridToMidPixel(config.GX, config.GY, tile);
+		tile->addComponent<CTransform>(pos, Vec2(0.0, 0.0), Vec2(1.0, 1.0), 0.0);
 		tile->addComponent<CBoundingBox>(tile->getComponent<CAnimation>().animation.getSize());
 	}
 }
@@ -213,6 +218,7 @@ void Scene_Play::sRender()
 		for (auto e : entities.getEntities())
 		{
 			auto& transform = e->getComponent<CTransform>();
+
 			if (e->hasComponent<CAnimation>())
 			{
 				auto& animation = e->getComponent<CAnimation>().animation;
