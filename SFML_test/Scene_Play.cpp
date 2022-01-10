@@ -326,6 +326,15 @@ void Scene_Play::sCollision()
 			player->getComponent<CTransform>().pos = player->getComponent<CTransform>().prevPos;
 		}
 	}
+
+	for (auto e : entities.getEntities("Tile"))
+	{
+		if (Physics::isCollision(player, e))
+		{
+			Vec2 ov = Physics::getOverlap(player, e);
+			player->getComponent<CTransform>().pos = player->getComponent<CTransform>().prevPos;
+		}
+	}
 }
 
 void Scene_Play::sAnimation()

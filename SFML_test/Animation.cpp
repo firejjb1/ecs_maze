@@ -23,7 +23,7 @@ void Animation::setFlipH(bool flip)
 {
 	if (flipH != flip)
 	{
-		currentFrame = 0;
+		//currentFrame = 0;
 	}
 	flipH = flip;
 }
