@@ -10,7 +10,7 @@ void Game::init(const std::string& path)
 {
 	std::ifstream assetIn(path + "/Asset.txt"); 
 	std::ifstream levelIn(path + "/Level.txt");
-	// load assets
+
 	std::string input;
 	
 	// render window
@@ -45,8 +45,6 @@ void Game::init(const std::string& path)
 		}
 	}
 
-	
-
 	// init scenes
 	Scene_Play sceneLevel1(std::shared_ptr<Game>(this), std::string(path+"/Level.txt"));
 	m_sceneMap["level1"] = std::make_shared<Scene_Play>(sceneLevel1);
@@ -55,7 +53,6 @@ void Game::init(const std::string& path)
 
 void Game::run()
 {
-
 	while (m_running)
 	{
 		sUserInput();
@@ -68,7 +65,6 @@ void Game::run()
 
 void Game::sUserInput()
 {
-	// TODO
 	sf::Event e;
 
 	while (m_window.pollEvent(e))

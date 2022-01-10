@@ -3,6 +3,7 @@
 
 struct PlayerConfig { int GX, GY; float CW, CH, SX, SY, SM, GV; std::string B; };
 struct EnemyConfig { std::string name; int GX, GY; float CW, CH, SX, SY, SM, GV; };
+struct TileConfig { std::string name; int GX, GY; };
 
 class Scene_Play : public Scene
 {
@@ -10,6 +11,7 @@ class Scene_Play : public Scene
 	std::shared_ptr<Entity> player;
 	PlayerConfig playerConfig;
 	std::vector<EnemyConfig> enemyConfig;
+	std::vector<TileConfig> tileConfig;
 	sf::Text m_gridText;
 	Vec2 m_gridSize = { 64, 64 };
 	bool m_drawTextures = true;
@@ -29,6 +31,7 @@ class Scene_Play : public Scene
 	void loadLevel(const std::string& levelPath);
 	Vec2 gridToMidPixel(float gridX, float gridY, std::shared_ptr<Entity> entity);
 	void spawnPlayer();
+	void spawnTiles();
 	void onEnd();
 	void drawLine(const Vec2& p1, const Vec2& p2);
 public:

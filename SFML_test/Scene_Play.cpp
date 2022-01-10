@@ -26,7 +26,6 @@ void Scene_Play::loadLevel(const std::string & levelPath)
 {
 	entities = EntityManager();
 	// read level file and add approriate entities
-		// GX GY CW CH SX SY SM GY B
 	int GX, GY;
 	float CW, CH, SX, SY, SM, GV;
 	std::string B;
@@ -48,13 +47,21 @@ void Scene_Play::loadLevel(const std::string & levelPath)
 			levelin >> name >> GX >> GY >> CW >> CH >> SX >> SY >> SM >> GV;
 			enemyConfig.push_back({ name, GX, GY, CW, CH, SX, SY, SM, GV });
 		}
+
+		if (type == "Tile")
+		{
+			// Tile N GX GY
+			levelin >> name >> GX >> GY;
+			tileConfig.push_back({ name, GX, GY });
+		}
 	}
+
+	spawnTiles();
 	
 }
 
 void Scene_Play::sEnemySpawner()
 {
-	
 	if (entities.getEntities("Enemy").size() == 0)
 	{
 		for (auto eConfig : enemyConfig)
@@ -65,9 +72,7 @@ void Scene_Play::sEnemySpawner()
 			e->addComponent<CTransform>(gridToMidPixel(eConfig.GX, eConfig.GY, e), Vec2(0.0, 0.0), Vec2(2.0, 2.0), 0.0);
 			e->addComponent<CBoundingBox>(Vec2(eConfig.CW, eConfig.CH));
 		}
-		
 	}
-	
 }
 
 Vec2 Scene_Play::gridToMidPixel(float gridX, float gridY, std::shared_ptr<Entity> entity)
@@ -87,18 +92,26 @@ void Scene_Play::spawnPlayer()
 	// TODO
 }
 
+void Scene_Play::spawnTiles()
+{
+	for (auto config: tileConfig)
+	{
+		auto tile = entities.addEntity("Tile");
+		tile->addComponent<CAnimation>(GameEngine->assets().getAnimation(config.name), true);
+		tile->addComponent<CTransform>(gridToMidPixel(config.GX, config.GY, tile), Vec2(0.0, 0.0), Vec2(1.0, 1.0), 0.0);
+		tile->addComponent<CBoundingBox>(tile->getComponent<CAnimation>().animation.getSize());
+	}
+}
+
 void Scene_Play::update()
 {
 	entities.update();
-	// TODO pause
 	sMovement();
 	sLifespan();
 	sCollision();
 	sAnimation();
 	sEnemySpawner();
 	sRender();
-	
-	
 }
 
 void Scene_Play::doAction(const Action& action)
@@ -203,7 +216,6 @@ void Scene_Play::sRender()
 			if (e->hasComponent<CAnimation>())
 			{
 				auto& animation = e->getComponent<CAnimation>().animation;
-				//std::cout << e->tag() << animation.getSprite().getTexture() << "\n";
 				animation.getSprite().setRotation(transform.angle);
 				animation.getSprite().setPosition(transform.pos.x, transform.pos.y);
 				animation.getSprite().setScale(transform.scale.x, transform.scale.y);
@@ -271,7 +283,6 @@ void Scene_Play::sMovement()
 	auto& pAnimation = player->getComponent<CAnimation>().animation;
 	Vec2 playerV(pInput.right - pInput.left, pInput.down - pInput.up);
 	playerV *= playerConfig.SX;
-	// normalize
 	
 	if (playerV.dist(Vec2(0.f, 0.f)) > 0.f)
 	{
@@ -285,19 +296,12 @@ void Scene_Play::sMovement()
 	pTransform.velocity = playerV;
 	pTransform.prevPos = Vec2(pTransform.pos);
 	pTransform.pos += pTransform.velocity;
-	// player movement based on cInput
 	// gravity
 	// maximum gravity speed in x y
-	// note, set entity's scale.x to -1 to face left
+
 	if (player->getComponent<CState>().facing == "Left")
 	{
-		// not working.. fix
 		pAnimation.setFlipH(true);
-		
-		//sf::IntRect rect = pAnimation.getSprite().getTextureRect();
-		//rect.left = rect.left + rect.width;
-		//rect.width *= -1;
-		//pAnimation.getSprite().setTextureRect(rect);
 	}
 	else {
 		pAnimation.setFlipH(false);
@@ -306,7 +310,6 @@ void Scene_Play::sMovement()
 
 void Scene_Play::sCollision()
 {
-	// implement Physics::GetOverlap
 	// check if player has fallen down hole
 	// don't walk off left side of the map
 	for (auto e : entities.getEntities("Enemy"))
@@ -321,10 +324,6 @@ void Scene_Play::sCollision()
 
 void Scene_Play::sAnimation()
 {
-	// complete Animation class
-	// set animation based on CState
-	// for each entity with animation, call entity->getComponent<CAnimation>().animation.update()
-	// if not repeat animation and has ended, destroy entity
 	for (auto entity : entities.getEntities())
 	{
 		if (entity->hasComponent<CAnimation>())
