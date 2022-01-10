@@ -26,4 +26,5 @@ public:
 	sf::Sprite& getSprite();
 	void setRepeat(bool);
 	void setFlipH(bool);
+	bool getFlipH();
 };

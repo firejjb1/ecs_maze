@@ -56,3 +56,8 @@ void Animation::setRepeat(bool repeat)
 {
 	this->repeat = repeat;
 }
+
+bool Animation::getFlipH()
+{
+	return flipH;
+}

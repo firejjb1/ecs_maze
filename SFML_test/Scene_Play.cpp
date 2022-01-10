@@ -349,7 +349,9 @@ void Scene_Play::sAnimation()
 				std::string animName = entity->tag() + entity->getComponent<CState>().state + "Anim";
 				if (anim.getName() != animName)
 				{
+					bool flip = anim.getFlipH();
 					anim = GameEngine->assets().getAnimation(animName);
+					anim.setFlipH(flip);
 				}
 			}
 		
