@@ -1,6 +1,7 @@
 #include "Scene_Play.h"
 #include "Game.h"
 #include "Physics.h"
+#include <random>
  
 Scene_Play::Scene_Play(std::shared_ptr<Game> game, const std::string & levelPath):
 	levelPath{levelPath}, Scene(game)
@@ -10,8 +11,10 @@ Scene_Play::Scene_Play(std::shared_ptr<Game> game, const std::string & levelPath
 
 void Scene_Play::init()
 {
-	m_gridSize = { GameEngine->window().getSize().x / 10.f, GameEngine->window().getSize().y / 10.f };
-
+	Vec2 gridPerScreen = { 20.f, 10.f };
+	m_gridSize = { GameEngine->window().getSize().x / gridPerScreen.x, GameEngine->window().getSize().y / gridPerScreen.y };
+	// TODO parameterize
+	m_mazeSize = { gridPerScreen.x * 2, gridPerScreen.y };
 	registerAction(sf::Keyboard::P, "PAUSE");
 	registerAction(sf::Keyboard::Escape, "Quit");
 	registerAction(sf::Keyboard::T, "TOGGLE_TEXTURE");
@@ -94,17 +97,89 @@ void Scene_Play::spawnPlayer()
 	player->addComponent<CInput>(); 
 	player->addComponent<CState>("Idle");
 	// TODO
+
+
+}
+
+void Scene_Play::spawnTile(float GX, float GY, Vec2 boundingSize, std::string animationName)
+{
+	std::shared_ptr<Entity> tile = entities.addEntity("Tile");
+	if (!animationName.empty())
+		tile->addComponent<CAnimation>(GameEngine->assets().getAnimation(animationName), true);
+	auto pos = gridToMidPixel(GX, GY, tile);
+	tile->addComponent<CTransform>(pos, Vec2(0.0, 0.0), Vec2(1.0, 1.0), 0.0);
+	tile->addComponent<CBoundingBox>(boundingSize);
 }
 
 void Scene_Play::spawnTiles()
 {
+	// config tiles
 	for (auto config: tileConfig)
 	{
-		std::shared_ptr<Entity> tile = entities.addEntity("Tile");
-		tile->addComponent<CAnimation>(GameEngine->assets().getAnimation(config.name), true);
-		auto pos = gridToMidPixel(config.GX, config.GY, tile);
-		tile->addComponent<CTransform>(pos, Vec2(0.0, 0.0), Vec2(1.0, 1.0), 0.0);
-		tile->addComponent<CBoundingBox>(tile->getComponent<CAnimation>().animation.getSize());
+		spawnTile(config.GX, config.GY, m_gridSize, config.name);
+	}
+
+	// top bound
+	spawnTile(m_mazeSize.x / 2, 0, Vec2(m_gridSize.x * m_mazeSize.x + m_gridSize.x, m_gridSize.y));
+
+	// bottom bound
+	spawnTile(m_mazeSize.x / 2, m_mazeSize.y, Vec2(m_gridSize.x * m_mazeSize.x + m_gridSize.x, m_gridSize.y));
+
+	// left bound
+	spawnTile(0, m_mazeSize.y / 2, Vec2(m_gridSize.x, m_mazeSize.y * m_gridSize.y + m_gridSize.y));
+
+	// right bound
+	spawnTile(m_mazeSize.x, m_mazeSize.y / 2, Vec2(m_gridSize.x, m_mazeSize.y * m_gridSize.y + m_gridSize.y));
+
+	enum CellState { UNVISITED, VISITED, PATH };
+	std::vector<Vec2> cellStack;
+	std::vector<CellState> cellVisitedMap(m_mazeSize.x * m_mazeSize.y, UNVISITED);
+	cellStack.push_back(Vec2(playerConfig.GX, playerConfig.GY));
+
+	// generate maze
+	while (cellStack.size() > 0)
+	{
+		Vec2 cell = cellStack.back();
+		cellStack.pop_back();
+
+		std::cout << cell.x << " " << cell.y << "\n";
+
+		cellVisitedMap[cell.x * cell.y] = PATH;
+		std::vector<Vec2> neighboursToVisit;
+		if (cell.x == m_mazeSize.x - 1 && cell.y == m_mazeSize.y - 1)
+			break;
+		for (int i = cell.x-1; i <= cell.x+1; i++)
+		{
+			for (int j = cell.y-1; j <= cell.y+1; j++)
+			{
+				if (i-cell.x == j-cell.y)
+					continue;
+				if (i <= 0 || i >= m_mazeSize.x || j <= 0 || j >= m_mazeSize.y)
+				{
+					continue;
+				}
+				
+				if (cellVisitedMap[i * j] == UNVISITED)
+				{
+					std::cout << "unvisited\n";
+					cellVisitedMap[i * j] = VISITED;
+					neighboursToVisit.push_back(Vec2(i, j));
+				}
+			}
+		}
+		std::shuffle(neighboursToVisit.begin(), neighboursToVisit.end(), std::default_random_engine(42));
+		cellStack.insert(cellStack.end(), neighboursToVisit.begin(), neighboursToVisit.end());
+	}
+
+	for (int i = 0; i < m_mazeSize.x; i++)
+	{
+		for (int j = 0; j < m_mazeSize.y; j++)
+		{
+			if (cellVisitedMap[i * j] != PATH)
+			{
+				spawnTile(i, j, m_gridSize);
+			}
+		}
 	}
 }
 

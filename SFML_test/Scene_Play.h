@@ -14,6 +14,7 @@ class Scene_Play : public Scene
 	std::vector<TileConfig> tileConfig;
 	sf::Text m_gridText;
 	Vec2 m_gridSize;
+	Vec2 m_mazeSize;
 	bool m_drawTextures = true;
 	bool m_drawCollision = false;
 	bool m_drawGrid = false;
@@ -32,6 +33,7 @@ class Scene_Play : public Scene
 	Vec2 gridToMidPixel(float gridX, float gridY, std::shared_ptr<Entity> entity);
 	void spawnPlayer();
 	void spawnTiles();
+	void spawnTile(float GX, float GY, Vec2 boundingSize, std::string animationName="");
 	void onEnd();
 	void drawLine(const Vec2& p1, const Vec2& p2);
 public:
