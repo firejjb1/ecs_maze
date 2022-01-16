@@ -1,8 +1,10 @@
 #include "Scene_Play.h"
 #include "Game.h"
 #include "Physics.h"
+#include <algorithm>
 #include <random>
- 
+#include <chrono>
+
 Scene_Play::Scene_Play(std::shared_ptr<Game> game, const std::string & levelPath):
 	levelPath{levelPath}, Scene(game)
 {
@@ -123,7 +125,7 @@ void Scene_Play::spawnTiles()
 	spawnTile(m_mazeSize.x / 2, 0, Vec2(m_gridSize.x * m_mazeSize.x + m_gridSize.x, m_gridSize.y));
 
 	// bottom bound
-	spawnTile(m_mazeSize.x / 2, m_mazeSize.y, Vec2(m_gridSize.x * m_mazeSize.x + m_gridSize.x, m_gridSize.y));
+	spawnTile(m_mazeSize.x / 2, m_mazeSize.y+1, Vec2(m_gridSize.x * m_mazeSize.x + m_gridSize.x, m_gridSize.y));
 
 	// left bound
 	spawnTile(0, m_mazeSize.y / 2, Vec2(m_gridSize.x, m_mazeSize.y * m_gridSize.y + m_gridSize.y));
@@ -131,46 +133,44 @@ void Scene_Play::spawnTiles()
 	// right bound
 	spawnTile(m_mazeSize.x, m_mazeSize.y / 2, Vec2(m_gridSize.x, m_mazeSize.y * m_gridSize.y + m_gridSize.y));
 
+	// generate maze with DFS
 	enum CellState { UNVISITED, VISITED, PATH };
 	std::vector<Vec2> cellStack;
 	std::vector<CellState> cellVisitedMap(m_mazeSize.x * m_mazeSize.y, UNVISITED);
 	cellStack.push_back(Vec2(playerConfig.GX, playerConfig.GY));
-
-	// generate maze
-	while (cellStack.size() > 0)
-	{
-		Vec2 cell = cellStack.back();
-		cellStack.pop_back();
-
-		std::cout << cell.x << " " << cell.y << "\n";
-
-		cellVisitedMap[cell.x * cell.y] = PATH;
-		std::vector<Vec2> neighboursToVisit;
-		if (cell.x == m_mazeSize.x - 1 && cell.y == m_mazeSize.y - 1)
-			break;
-		for (int i = cell.x-1; i <= cell.x+1; i++)
-		{
-			for (int j = cell.y-1; j <= cell.y+1; j++)
+			
+			while (cellStack.size() > 0)
 			{
-				if (i-cell.x == j-cell.y)
-					continue;
-				if (i <= 0 || i >= m_mazeSize.x || j <= 0 || j >= m_mazeSize.y)
-				{
-					continue;
-				}
-				
-				if (cellVisitedMap[i * j] == UNVISITED)
-				{
-					std::cout << "unvisited\n";
-					cellVisitedMap[i * j] = VISITED;
-					neighboursToVisit.push_back(Vec2(i, j));
-				}
-			}
-		}
-		std::shuffle(neighboursToVisit.begin(), neighboursToVisit.end(), std::default_random_engine(42));
-		cellStack.insert(cellStack.end(), neighboursToVisit.begin(), neighboursToVisit.end());
-	}
+				Vec2 cell = cellStack.back();
+				cellStack.pop_back();
 
+				cellVisitedMap[cell.x * cell.y] = PATH;
+				std::vector<Vec2> neighboursToVisit;
+				if (cell.x == m_mazeSize.x - 1.0 && cell.y == m_mazeSize.y - 1.0)
+					break;
+				for (int i = cell.x - 1; i <= cell.x + 1; i++)
+				{
+					for (int j = cell.y - 1; j <= cell.y + 1; j++)
+					{
+						if ((i - cell.x) * (i - cell.x) == (j - cell.y) * (j - cell.y))
+							continue;
+						if (i <= 0 || i > m_mazeSize.x || j <= 0 || j >= m_mazeSize.y)
+						{
+							continue;
+						}
+
+						if (cellVisitedMap[i * j] == UNVISITED)
+						{
+							cellVisitedMap[i * j] = VISITED;
+							neighboursToVisit.push_back(Vec2(i, j));
+						}
+					}
+				}
+				unsigned seed = std::chrono::system_clock::now().time_since_epoch().count();
+				std::shuffle(neighboursToVisit.begin(), neighboursToVisit.end(), std::default_random_engine(seed));
+				cellStack.insert(cellStack.end(), neighboursToVisit.begin(), neighboursToVisit.end());
+			}
+	// spawn tiles for cells
 	for (int i = 0; i < m_mazeSize.x; i++)
 	{
 		for (int j = 0; j < m_mazeSize.y; j++)
