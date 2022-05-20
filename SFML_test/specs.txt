@@ -1,0 +1,118 @@
+Assets:
+	Texture and animations
+	Fonts
+	assets.txt
+
+Entity
+	position denote center of rectangular sprite
+	also center of bounding box
+	sprite.setOrigin() in animation class constructor
+
+Player
+	animations: stand, run, air
+	determine and assign animation
+	controls: A D W Space
+	can move in air
+	can only jump when standing on a tile
+	hold jump vs release (start falling)
+	shoot in direction facing
+	collide with Tile entities
+	does not collide with Dec entities
+	gravity component - accelerate downward
+	maximum speed (either direction)
+	CBoundingBox specified in level file
+
+Animations
+	assets file
+	store multiple frames inside a texture
+	Animation class handles frame advancement based on animation speed
+	implement Animation::update()
+	implement Animation::hasEnded()
+	can be repeated or non-repeating
+	non-repeating: destroyed once hasEnded() returns true
+
+Decoration Entities
+	Drawn on screen, no other interaction
+	
+Tiles
+	Level geometry, interact with players
+	Any animation
+	CBoundingBox size of animationtile->getComponent<CAnimation>().animation.getSize()
+	current animation for a tile retrieved with tile->getComponent<CAnimation>().animation.getName()
+	Tiles have different behaviour depending on which Animation they are given
+
+Brick Tiles
+	Brick animation
+	collide with bullet or hit from below: destroyed
+		animation change to Explosion
+		bounding box removed
+
+Question Tiles
+	Question animation
+	hit from below: Question2 animation, lifespan entity Coin animation appear for 30 frames, 64 pixels above
+
+Bonus
+	special effects
+	special weapon
+	NPCs
+
+Misc
+	P pause
+	T toggle drawing textures
+	C draw bounding box
+	G draw grid
+	ESC back to main or quit if in main
+
+Level Creation
+
+Asset Config
+	Texture asset spec
+		Texture N P
+		N is texture name (no space)
+		P is filepath (no space)
+	Animation asset spec
+		Animation N T F S
+		N is name
+		T is texture name (existing texture)
+		F is frame count
+		S is animation speed (game frames between anim frames)
+	Font  asset spec
+		Font N P
+		N is name
+		P is path
+
+Level Config
+	Tile entity spec
+		Tile N GX GY
+		N is animation name (asset name)
+		GX is grid x pos
+		GY is grid y pos
+	Decoration entity spec
+		Dec N X Y
+		N is animation name
+		X is x pos
+		Y is y pos
+	Player spec
+		Player GX GY CW CH SX SY SM GY B
+		GX, GY Grid Pos starting pos 
+		CW CH bounding box width height
+		SX left right speed
+		SY jump speed
+		SM max speed
+		GY gravity
+		B bullet animation
+	Enemy spec
+		Enemy GX GY CW CH SX SY SM GY
+		GX, GY Grid Pos starting pos 
+		CW CH bounding box width height
+		SX left right speed
+		SY jump speed
+		SM max speed
+		GY gravity
+
+steps
+	Rendering
+	Scene_Play
+	
+
+

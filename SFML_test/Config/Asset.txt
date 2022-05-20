@@ -1,0 +1,12 @@
+Texture PlayerIdle Sprites/_Idle.png
+Texture PlayerRun Sprites/_Run.png
+Texture PlayerJump Sprites/_Jump.png
+Texture InaIdle Sprites/_Ina.png
+Texture Tile1 Sprites/_Tile1.png
+Animation PlayerRunAnim PlayerRun 10 3
+Animation PlayerIdleAnim PlayerIdle 10 3
+Animation PlayerJumpAnim PlayerJump 3 10
+Animation InaIdleAnim InaIdle 1 60
+Animation TileAnim Tile1 1 60
+Font Arial Fonts/arial.ttf
+
